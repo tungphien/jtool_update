@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# modifier: phien.ngo
+# author: phien.ngo
 import os
 import re
 from argparse import ArgumentParser
