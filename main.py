@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3 or python2
 # author: phien.ngo
 import os
 import re
