@@ -1,4 +1,4 @@
-# python3 or python2 
+# python3 or python2
 # author: phien.ngo
 import os
 import re
