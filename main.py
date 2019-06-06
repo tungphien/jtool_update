@@ -1,5 +1,5 @@
-# python3 or python2
-# author: phien.ngo
+#!/usr/bin/env python3
+# modifier: phien.ngo
 import os
 import re
 from argparse import ArgumentParser
@@ -10,7 +10,8 @@ import sys
 AGNI_KEYWORD_TEMP_FILES = 'agni_keywords.json'
 TESTCASE_TEMPLATE_FILE = 'tcs.yaml'
 CONFIG_FILE = 'config.json'
-
+with open(CONFIG_FILE) as json_file:
+  config_data = json.load(json_file)
 
 def detectCommentLine(yaml_content, format_structure):
   regex = r"(#.*)\n([\s]{0,})(.*)\n"
@@ -56,30 +57,30 @@ def detect_file(yaml_content, format_structure):
   # detect testcase name
   testcase_name_list = re.findall('[\s]{0,}(.*)\n.*common_variables:', yaml_content)
   for item in testcase_name_list:
-    format_structure[item.strip() + '@None'] = 4
+    format_structure[item.strip() + '@None'] = config_data['indent']['level_2']
   # detect all common variables
   format_structure = detect_sub_block_by_words(yaml_content, format_structure,
-                                               ['common_variables:'], 'steps:', None, 17)
+                                               ['common_variables:'], 'steps:', None, config_data['indent']['level_4'])
   # detect index step
   index_step_list = re.findall('\n[\s]{0,}(\d+:)\n', yaml_content)
   for item in index_step_list:
-    format_structure[item.strip() + '@None'] = 17
+    format_structure[item.strip() + '@None'] = config_data['indent']['level_4']
   # detect stepname
   index_stepname_list = re.findall('\n[\s]{0,}\d+:[\s]{0,}(.*)\n', yaml_content)
   for item in index_stepname_list:
-    format_structure[item.strip() + '@None'] = 21
+    format_structure[item.strip() + '@None'] = config_data['indent']['level_5']
   # detect comment line
   format_structure = detectCommentLine(yaml_content, format_structure)
   # detect sub command of run_event, run_keyword, create_dictionary_and_get,..
   format_structure = detect_sub_block_by_words(yaml_content, format_structure,
                                                ['run_event:', 'run_keyword:', 'create_dictionary_and_get:',
-                                                'create_dictionary_and_check:'], 'unique_id', None, 29)
+                                                'create_dictionary_and_check:'], 'unique_id', None, config_data['indent']['level_7'])
   # detect sub command of checks options
   format_structure = detect_sub_block_by_words(yaml_content, format_structure,
-                                               ['checks:'], None, '- ', 39)
+                                               ['checks:'], None, '- ', config_data['indent']['level_9'])
   # detect sub command of loop_over_list options
   format_structure = detect_sub_block_by_words(yaml_content, format_structure,
-                                               ['loop_over_list:'], None, '- ', 33)
+                                               ['loop_over_list:'], None, '- ', config_data['indent']['level_8'])
 
   return format_structure
 
@@ -113,15 +114,13 @@ def addBlankLine(yaml_content):
 def update_unique_ids_and_format(yaml_file=None, uid=1):
   directory, filename = os.path.split(yaml_file)
   format_structure = {
-    "Granular_tests:@None": 0,
-    "common_variables:@None": 8,
-    "steps:@None": 8,
-    "devices: device@None": 29,
-    "checks:@None": 29,
-    "loop_over_list:@None": 29
+    "Granular_tests:@None": config_data['indent']['level_1'],
+    "common_variables:@None": config_data['indent']['level_3'],
+    "steps:@None": config_data['indent']['level_3'],
+    "devices: device@None": config_data['indent']['level_7'],
+    "checks:@None": config_data['indent']['level_7'],
+    "loop_over_list:@None": config_data['indent']['level_7']
   }
-  with open(CONFIG_FILE) as json_file:
-    config_data = json.load(json_file)
 
   unique_ids_mapping = {}
   file_name_obj_arr = config_data['testcase_filename'].split('|')
@@ -147,13 +146,13 @@ def update_unique_ids_and_format(yaml_file=None, uid=1):
       steps_counter = 1
     if 'run_keyword:' in line or 'run_event:' in line \
             or 'create_dictionary_and_get' in line or 'create_dictionary_and_check' in line:
-      format_structure[line.strip() + '@' + str(i)] = 25
+      format_structure[line.strip() + '@' + str(i)] = config_data['indent']['level_6']
     if 'unique_id:' in line:
       line = line.split(':')[0] + ': ' + str(counter)
       counter += 1
-      format_structure[line.strip() + '@' + str(i)] = 25
+      format_structure[line.strip() + '@' + str(i)] = config_data['indent']['level_6']
     if re.search('^\s*\d+\:$', line):
-      spaces = 17
+      spaces = config_data['indent']['level_4']
       line = ' ' * spaces + str(steps_counter) + ':'
       steps_counter += 1
 
@@ -239,9 +238,6 @@ def getStepContent(stepObj, result):
 
 
 def readAgniKeyword():
-  with open(CONFIG_FILE) as json_file:
-    config_data = json.load(json_file)
-
   agni_directory_path = config_data['agni_path'] + '\\'
   list_file_paths = glob.glob(agni_directory_path + "*.yaml")
 
