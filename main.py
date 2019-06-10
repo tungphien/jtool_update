@@ -1,4 +1,4 @@
-# python3
+#!/usr/bin/env python3
 # modifier: phien.ngo
 import os
 import re
