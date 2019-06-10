@@ -55,7 +55,7 @@ def detect_sub_block_by_words(yaml_content, format_structure, begin_from_list_wo
 
 def detect_file(yaml_content, format_structure):
   # detect testcase name
-  testcase_name_list = re.findall('[\s]{0,}(.*)\n.*common_variables:', yaml_content)
+  testcase_name_list = re.findall('\s*(.*:)\s*\n*common_variables:', yaml_content)
   for item in testcase_name_list:
     format_structure[item.strip() + '@None'] = config_data['indent']['level_2']
   # detect all common variables
